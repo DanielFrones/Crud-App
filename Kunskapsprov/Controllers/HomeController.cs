@@ -1,5 +1,7 @@
-﻿using Kunskapsprov.Models;
+﻿using Kunskapsprov.Connection;
+using Kunskapsprov.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,26 +14,68 @@ namespace Kunskapsprov.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context; 
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Person.ToListAsync());
+        }
+
+
+        [HttpGet]
+        public ActionResult Create()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        public ActionResult Create(Person model)
         {
+            _context.Person.Add(model);
+            _context.SaveChanges();
+            ViewBag.Message = "Data Insert Successfully";
             return View();
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+
+
+        [HttpGet]
+        public async Task<ActionResult> Edit(int id)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var data = await _context.Person.Where(x => x.Id == id).FirstOrDefaultAsync();
+            return View(data);
         }
+        [HttpPost]
+        public async Task<ActionResult> Edit(Person Model)
+        {
+            var data = await _context.Person.Where(x => x.Id == Model.Id).FirstOrDefaultAsync();
+            if (data != null)
+            {
+                data.Address = Model.Address;
+                data.FirstName = Model.FirstName;
+                data.LastName = Model.LastName;
+                await _context.SaveChanges();
+            }
+
+            return RedirectToAction("index");
+        }
+
+
+        public async Task<ActionResult> Detail(int id)
+        {
+            var data = await _context.Person.Where(x => x.Id == id).FirstOrDefaultAsync();
+            return View(data);
+        }
+
+
+
+
+
     }
 }
