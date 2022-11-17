@@ -28,6 +28,7 @@ namespace Kunskapsprov.Controllers
         }
 
 
+        
         [HttpGet]
         public ActionResult Create()
         {
@@ -40,7 +41,7 @@ namespace Kunskapsprov.Controllers
             _context.Person.Add(model);
             _context.SaveChanges();
             ViewBag.Message = "Data Insert Successfully";
-            return View();
+            return View("Create");
         }
 
 
@@ -73,6 +74,15 @@ namespace Kunskapsprov.Controllers
             return View(data);
         }
 
+
+        public ActionResult Delete(int id)
+        {
+            var data = _context.Person.Where(x => x.Id == id).FirstOrDefault();
+            _context.Person.Remove(data);
+            _context.SaveChanges();
+            ViewBag.Messsage = "Record Delete Successfully";
+            return RedirectToAction("index");
+        }
 
 
 
